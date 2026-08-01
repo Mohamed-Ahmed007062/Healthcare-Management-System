@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+
+  /* Premium HSL Color Palette */
+  --color-brand-50: hsl(210, 100%, 98%);
+  --color-brand-100: hsl(210, 100%, 95%);
+  --color-brand-200: hsl(212, 96%, 89%);
+  --color-brand-300: hsl(213, 94%, 81%);
+  --color-brand-400: hsl(215, 89%, 66%);
+  --color-brand-500: hsl(217, 91%, 60%);
+  --color-brand-600: hsl(220, 89%, 52%);
+  --color-brand-700: hsl(224, 76%, 45%);
+  --color-brand-800: hsl(226, 71%, 38%);
+  --color-brand-900: hsl(224, 64%, 33%);
+  --color-brand-950: hsl(226, 57%, 21%);
+
+  /* Accent colors (purple/violet) */
+  --color-accent-50: hsl(270, 100%, 98%);
+  --color-accent-500: hsl(271, 91%, 60%);
+  --color-accent-600: hsl(272, 89%, 52%);
+  
+  /* Status Colors */
+  --color-success-500: hsl(142, 76%, 45%);
+  --color-warning-500: hsl(38, 92%, 50%);
+  --color-danger-500: hsl(350, 89%, 60%);
+
+  /* Neutral Dark Theme Backgrounds */
+  --color-dark-bg: hsl(222, 47%, 11%);
+  --color-dark-card: hsl(223, 47%, 15%);
+  --color-dark-border: hsl(223, 30%, 22%);
+
+  /* Transitions */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Custom Base Styles */
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Dark mode class-based override (Zustand or manual theme toggler) */
+.dark body {
+  background-color: var(--color-dark-bg);
+  color: #f1f5f9;
+}
+
+/* Premium Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s var(--ease-premium) forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Utility Glassmorphism Class */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
