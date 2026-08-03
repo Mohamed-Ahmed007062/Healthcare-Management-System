@@ -21,8 +21,8 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DB_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
 
-  // ---- Client (CORS allowlist) ----
-  CLIENT_URL: z.string().url().default('http://localhost:5173'),
+  // ---- Client (CORS allowlist — comma-separated origins) ----
+  CLIENT_URL: z.string().min(1).default('http://localhost:5173'),
 
   // ---- JWT ----
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be >= 32 chars'),

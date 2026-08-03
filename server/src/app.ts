@@ -21,10 +21,23 @@ const app = express();
 // 1. Basic Security Headers (Helmet)
 app.use(helmet());
 
-// 2. CORS configuration (credentials allowed, specific origin)
+// 2. CORS configuration (credentials allowed, dynamic origin)
+const allowedOrigins = env.CLIENT_URL.split(',').map((o) => o.trim());
+
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, curl, mobile apps)
+      if (!origin) return callback(null, true);
+
+      // Check against explicit allowlist
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      // Allow any Vercel preview deployment (*.vercel.app)
+      if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-XSRF-TOKEN', 'X-CSRF-TOKEN'],
