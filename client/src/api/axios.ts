@@ -9,8 +9,10 @@ function getCookie(name: string): string | undefined {
   return undefined;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -86,7 +88,7 @@ api.interceptors.response.use(
       try {
         // Request token refresh
         const res = await axios.post(
-          '/api/v1/auth/refresh',
+          `${API_BASE_URL}/v1/auth/refresh`,
           {},
           { withCredentials: true }
         );
