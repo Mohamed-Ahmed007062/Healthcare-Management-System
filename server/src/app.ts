@@ -69,7 +69,12 @@ app.use(generalLimiter);
 // 8. Custom CSRF Double-Submit protection middleware (except GET, HEAD, OPTIONS)
 app.use(csrfProtection);
 
-// 9. Base Router mounted on /api
+// 9. Root route
+app.get('/', (_req, res) => {
+  res.json({ status: 'OK', message: 'Healthcare API Server' });
+});
+
+// 10. Base Router mounted on /api
 app.use('/api', router);
 
 // 10. Fallback middlewares
