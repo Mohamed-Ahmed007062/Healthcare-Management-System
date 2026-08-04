@@ -19,18 +19,23 @@ export function csrfProtection(req: Request, _res: Response, next: NextFunction)
     return next();
   }
 
-  // Bypass CSRF for public authentication routes (session establishment / recovery)
-  const bypassedPaths = [
-    '/api/v1/auth/login',
-    '/api/v1/auth/register',
-    '/api/v1/auth/forgot-password',
-    '/api/v1/auth/reset-password',
-    '/api/v1/auth/verify-email',
-    '/api/v1/auth/refresh'
+  // Bypass CSRF for all public auth routes — match against multiple path
+  // formats to handle differences between local dev and Vercel serverless
+  // (originalUrl, path, trailing slashes, etc.)
+  const bypassedSegments = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/refresh',
+    '/auth/profile',
   ];
 
-  const requestPath = req.originalUrl.split('?')[0]; // Strip query parameters
-  if (bypassedPaths.some((path) => requestPath.endsWith(path))) {
+  const requestPath = (req.originalUrl || req.url || '').split('?')[0].replace(/\/+$/, ''); // strip query params & trailing slashes
+  const isAuthRoute = bypassedSegments.some((seg) => requestPath.endsWith(seg));
+
+  if (isAuthRoute) {
     return next();
   }
 
