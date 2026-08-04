@@ -3,23 +3,25 @@ import authService from '../services/auth.service';
 import tokenService from '../services/token.service';
 import ApiResponse from '../utils/ApiResponse';
 import { generateRandomToken } from '../utils/crypto';
-import { cookieSecure, env } from '../config/env';
+import { cookieSecure, env, isProd } from '../config/env';
 
-// Cookie options
+// Cookie options — cross-origin deployments (different Vercel domains) require
+// sameSite: 'none' + secure: true so browsers allow sending cookies.
 const cookieDomain = env.COOKIE_DOMAIN || undefined;
+const sameSitePolicy: 'lax' | 'none' = isProd ? 'none' : 'lax';
 
 const accessCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: cookieSecure,
-  sameSite: 'lax',
+  secure: isProd ? true : cookieSecure,
+  sameSite: sameSitePolicy,
   maxAge: 15 * 60 * 1000, // 15 minutes
   domain: cookieDomain,
 };
 
 const refreshCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: cookieSecure,
-  sameSite: 'lax',
+  secure: isProd ? true : cookieSecure,
+  sameSite: sameSitePolicy,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   domain: cookieDomain,
 };
@@ -27,8 +29,8 @@ const refreshCookieOptions: CookieOptions = {
 // CSRF cookie is read by JavaScript to include in headers, so httpOnly: false
 const csrfCookieOptions: CookieOptions = {
   httpOnly: false,
-  secure: cookieSecure,
-  sameSite: 'lax',
+  secure: isProd ? true : cookieSecure,
+  sameSite: sameSitePolicy,
   maxAge: 7 * 24 * 60 * 60 * 1000,
   domain: cookieDomain,
 };
