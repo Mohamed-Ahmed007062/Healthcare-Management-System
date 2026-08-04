@@ -1,27 +1,37 @@
 import type { Request, Response, NextFunction } from 'express';
 import ApiError from '../utils/ApiError';
+import { isProd } from '../config/env';
 
 /**
  * Custom Double-Submit Cookie CSRF protection middleware.
- * 
- * Verifies that the client sends the CSRF token both in a cookie (XSRF-TOKEN)
- * and in a request header (X-XSRF-TOKEN). If they do not match, the request
- * is rejected with 403 Forbidden.
- * 
- * Read-only methods (GET, HEAD, OPTIONS) bypass this check.
- * Public authentication endpoints also bypass this check because no session
- * exists to be hijacked yet.
+ *
+ * ## Cross-Origin (Production on Vercel)
+ * When the frontend and backend live on different origins (e.g. two Vercel
+ * *.vercel.app subdomains) the browser cannot share cookies between them,
+ * making the double-submit cookie pattern unusable. However, our API uses
+ * JWT Bearer tokens sent via the `Authorization` header — which the browser
+ * never auto-attaches — so every mutating request already requires an
+ * explicit, non-cookie credential. This makes the API inherently CSRF-safe
+ * in cross-origin mode, so we skip the check in production.
+ *
+ * ## Same-Origin (Local Development)
+ * In local dev the frontend proxy makes everything same-origin, so the
+ * double-submit cookie pattern works and adds an extra safety layer.
  */
 export function csrfProtection(req: Request, _res: Response, next: NextFunction): void {
+  // 1. Safe (read-only) HTTP methods never need CSRF protection
   const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-  
   if (safeMethods.includes(req.method)) {
     return next();
   }
 
-  // Bypass CSRF for all public auth routes — match against multiple path
-  // formats to handle differences between local dev and Vercel serverless
-  // (originalUrl, path, trailing slashes, etc.)
+  // 2. In production (cross-origin), JWT Bearer auth already prevents CSRF.
+  //    Skip the cookie-based check entirely.
+  if (isProd) {
+    return next();
+  }
+
+  // 3. Bypass CSRF for public auth routes that have no session to hijack
   const bypassedSegments = [
     '/auth/login',
     '/auth/register',
@@ -29,16 +39,19 @@ export function csrfProtection(req: Request, _res: Response, next: NextFunction)
     '/auth/reset-password',
     '/auth/verify-email',
     '/auth/refresh',
-    '/auth/profile',
   ];
 
-  const requestPath = (req.originalUrl || req.url || '').split('?')[0].replace(/\/+$/, ''); // strip query params & trailing slashes
-  const isAuthRoute = bypassedSegments.some((seg) => requestPath.endsWith(seg));
-
-  if (isAuthRoute) {
+  const requestPath = (req.originalUrl || req.url || '').split('?')[0].replace(/\/+$/, '');
+  if (bypassedSegments.some((seg) => requestPath.endsWith(seg))) {
     return next();
   }
 
+  // 4. Requests carrying a Bearer token are inherently CSRF-safe
+  if (req.headers.authorization?.startsWith('Bearer ')) {
+    return next();
+  }
+
+  // 5. Double-submit cookie check (local dev, cookie-only auth)
   const cookieToken = req.cookies['XSRF-TOKEN'];
   const headerToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
 
